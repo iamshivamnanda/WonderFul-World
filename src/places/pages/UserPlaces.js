@@ -11,7 +11,7 @@ const Dummy_DATA =[
         imageurl:"https://images.hindustantimes.com/rf/image_size_960x540/HT/p2/2020/06/30/Pictures/_a15d5314-baac-11ea-a2a7-d359f39d1b90.jpg",
         location:{
             lat:40.7484405,
-            lng:73.9856644
+            lng:-73.9856644
         },
         createrid:'user1'
     },
@@ -23,7 +23,7 @@ const Dummy_DATA =[
         imageurl:"https://images.hindustantimes.com/rf/image_size_960x540/HT/p2/2020/06/30/Pictures/_a15d5314-baac-11ea-a2a7-d359f39d1b90.jpg",
         location:{
             lat:40.7484405,
-            lng:73.9856644
+            lng:-73.9856644
         },
         createrid:'user2'
     }
