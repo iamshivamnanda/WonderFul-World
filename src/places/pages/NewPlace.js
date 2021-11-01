@@ -1,7 +1,12 @@
-import React, { useCallback, useReducer } from 'react';
+import React, { useCallback, useReducer ,useContext } from 'react';
+import {useHistory} from 'react-router-dom';
 
 import Input from '../../shared/components/FormELements/Input/Input';
 import Button from '../../shared/components/FormELements/Button/Button';
+import { AuthContext } from '../../shared/context/auth-context';
+import { useHttpClient } from '../../shared/hooks/http-hook';
+import LoadingSpinner from '../../shared/Spinner/LoadingSpinner';
+import ErrorModal from '../../shared/components/Modal/ErrorModal';
 import {
   VALIDATOR_REQUIRE,
   VALIDATOR_MINLENGTH
@@ -33,6 +38,9 @@ const formReducer = (state, action) => {
 };
 
 const NewPlace = () => {
+
+  const auth = useContext(AuthContext);
+  const { isLoading, error, sendRequest, clearError } = useHttpClient();
   const [formState, dispatch] = useReducer(formReducer, {
     inputs: {
       title: {
@@ -56,13 +64,37 @@ const NewPlace = () => {
     });
   }, []);
 
-  const placeSubmitHandler = event => {
+  const history = useHistory();
+  const placeSubmitHandler = async (event) => {
     event.preventDefault();
-    console.log(formState.inputs); // send this to the backend!
+    // console.log(formState.inputs);
+    
+    try {
+      await sendRequest('http://localhost:5000/api/places','POST',JSON.stringify({
+        title:formState.inputs.title.value,
+    description:formState.inputs.description.value,
+    address: formState.inputs.address.value,
+    creator:auth.id.toString()
+      }),
+      {
+        'Content-Type': 'application/json'
+      });
+
+      // console.log(response);
+      history.push('/');
+    } catch (error) {
+      
+    }
+
+
+
+    // send this to the backend!
   };
 
   return (
     <form className="place-form" onSubmit={placeSubmitHandler}>
+      {isLoading?<LoadingSpinner asOverlay/>:null}
+      {<ErrorModal error={error} onClear={clearError} />}
       <Input
         id="title"
         element="input"

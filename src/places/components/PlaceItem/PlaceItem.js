@@ -4,13 +4,17 @@ import Button from "../../../shared/components/FormELements/Button/Button";
 import Modal from "../../../shared/components/Modal/Modal";
 import Map from "../../../shared/components/Map/Map";
 import { AuthContext } from '../../../shared/context/auth-context';
+import { useHttpClient } from '../../../shared/hooks/http-hook';
+import LoadingSpinner from '../../../shared/Spinner/LoadingSpinner';
+import ErrorModal from '../../../shared/components/Modal/ErrorModal';
 import './PlaceItem.css'
 
 const PlaceItem = (props) => {
     const auth = useContext(AuthContext);
-
+    const { isLoading, error, sendRequest, clearError } = useHttpClient();
     const [showMap, setShowMap] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+  
 
   const openMapHandler = () => setShowMap(true);
 
@@ -23,14 +27,22 @@ const PlaceItem = (props) => {
     setShowConfirmModal(false);
   };
 
-  const confirmDeleteHandler = () => {
+  const confirmDeleteHandler = async() => {
     setShowConfirmModal(false);
-    console.log('DELETING...');
+    try {
+      await sendRequest(`http://localhost:5000/api/places/${props.id}`,"DELETE");
+      props.onDelete(props.id);
+      
+    } catch (error) {
+      
+    }
   };
 
 
     return (
         <React.Fragment>
+         
+        {<ErrorModal error={error} onClear={clearError} />}
         <Modal
           show={showMap}
           onCancel={closeMapHandler}
@@ -66,6 +78,7 @@ const PlaceItem = (props) => {
       </Modal>
         <div className="place-item">
             <Card className='place-item__content'>
+            {isLoading ? <LoadingSpinner asOverlay />:null}
                 <div className='place-item__image'>
                     <img src={props.image} alt={props.title} />
                 </div>
@@ -76,11 +89,11 @@ const PlaceItem = (props) => {
                 </div>
                 <div className='place-item__actions'>
                     <Button inverse onClick={openMapHandler}>View On Map</Button>
-                    {auth.isLoggedIn && (
+                    {auth.id === props.createrId && (
               <Button to={`/places/${props.id}`}>EDIT</Button>
             )}
 
-            {auth.isLoggedIn && (
+            {auth.id === props.createrId && (
               <Button danger onClick={showDeleteWarningHandler}>
                 DELETE
               </Button>

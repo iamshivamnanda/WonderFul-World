@@ -1,40 +1,40 @@
-import React from 'react';
+import React,{useEffect,useState} from 'react';
 import { useParams } from "react-router-dom";
 import PlaceList from '../components/PlaceList/PlaceList';
+import LoadingSpinner from '../../shared/Spinner/LoadingSpinner';
+import ErrorModal from '../../shared/components/Modal/ErrorModal';
+import { useHttpClient } from '../../shared/hooks/http-hook';
 
-const Dummy_DATA =[
-    {
-        id:'p1',
-        title:"Empire State Building",
-        address:"20 W 34th St, New York, NY 10001, United States",
-        description:"Iconic, art deco office tower from 1931 with exhibits & observatories on the 86th & 102nd floors.",
-        imageurl:"https://images.hindustantimes.com/rf/image_size_960x540/HT/p2/2020/06/30/Pictures/_a15d5314-baac-11ea-a2a7-d359f39d1b90.jpg",
-        location:{
-            lat:40.7484405,
-            lng:-73.9856644
-        },
-        createrid:'user1'
-    },
-    {
-        id:'p2',
-        title:"Empire State Building",
-        address:"20 W 34th St, New York, NY 10001, United States",
-        description:"Iconic, art deco office tower from 1931 with exhibits & observatories on the 86th & 102nd floors.",
-        imageurl:"https://images.hindustantimes.com/rf/image_size_960x540/HT/p2/2020/06/30/Pictures/_a15d5314-baac-11ea-a2a7-d359f39d1b90.jpg",
-        location:{
-            lat:40.7484405,
-            lng:-73.9856644
-        },
-        createrid:'user2'
-    }
-]
+
+
 
 const UserPlaces = () => {
     const userid = useParams().userId;
-    const loadedPlaces = Dummy_DATA.filter(place => place.createrid === userid);
-    return (
+    const { isLoading, error, sendRequest, clearError } = useHttpClient();
+    const [loadedPlaces, setloadedPlaces] = useState([]);
+    useEffect(()=>{
+        const fetchplaces = async()=>{
+            try {
+                const response = await sendRequest(`http://localhost:5000/api/places/user/${userid}`);
+                // console.log(response);
+                setloadedPlaces(response.places);
+            } catch (error) {
+                
+            }
+        };
+        fetchplaces();
+    },[sendRequest, userid])
 
-       <PlaceList items={loadedPlaces} />
+    const placeDelHandler = (delPlaceId)=>{
+        setloadedPlaces(prevplace => prevplace.filter(place => place.id !== delPlaceId));
+    }
+    return (
+        <React.Fragment >
+        {isLoading ? <LoadingSpinner asOverlay />:null}
+        {<ErrorModal error={error} onClear={clearError} />}
+        {loadedPlaces && !isLoading && <PlaceList items={loadedPlaces} onDelete={placeDelHandler} /> }
+        
+        </React.Fragment>
     )
 }
 
