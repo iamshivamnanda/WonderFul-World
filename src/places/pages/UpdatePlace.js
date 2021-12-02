@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useContext } from 'react';
 import { useParams ,useHistory} from 'react-router-dom';
 
 import Input from '../../shared/components/FormELements/Input/Input';
@@ -7,6 +7,7 @@ import Card from '../../shared/components/Card/Card';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import LoadingSpinner from '../../shared/Spinner/LoadingSpinner';
 import ErrorModal from '../../shared/components/Modal/ErrorModal';
+import { AuthContext } from '../../shared/context/auth-context';
 import {
   VALIDATOR_REQUIRE,
   VALIDATOR_MINLENGTH
@@ -18,6 +19,8 @@ import './PlaceForm.css';
 const UpdatePlace = () => {
   const placeId = useParams().placeId;
   const history = useHistory();
+  const auth = useContext(AuthContext);
+
   // console.log(placeId);
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
     const [loadedPlace, setloadedPlace] = useState(null);
@@ -41,7 +44,7 @@ const UpdatePlace = () => {
 
   useEffect(() => {
     const fetchPlace = async()=>{
-      const response = await sendRequest(`http://localhost:5000/api/places/${placeId}`);
+      const response = await sendRequest(process.env.REACT_APP_BACKEND_URL+`/places/${placeId}`);
       setloadedPlace(response.place);
       setFormData(
             {
@@ -82,10 +85,11 @@ const UpdatePlace = () => {
   const placeUpdateSubmitHandler = async event => {
     event.preventDefault();
     try {
-      await sendRequest(`http://localhost:5000/api/places/${placeId}`,'PATCH',JSON.stringify({
+      await sendRequest(process.env.REACT_APP_BACKEND_URL+`/places/${placeId}`,'PATCH',JSON.stringify({
      title:formState.inputs.title.value,
      description:formState.inputs.description.value
    }),{
+    Authorization:"Bearer " + auth.token,
      'Content-Type':'application/json'
    });
   //  console.log("DONE");

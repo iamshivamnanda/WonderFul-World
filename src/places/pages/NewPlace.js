@@ -7,11 +7,13 @@ import { AuthContext } from '../../shared/context/auth-context';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import LoadingSpinner from '../../shared/Spinner/LoadingSpinner';
 import ErrorModal from '../../shared/components/Modal/ErrorModal';
+import ImagePicker from '../../shared/components/FormELements/ImagePicker/ImagePicker';
 import {
   VALIDATOR_REQUIRE,
   VALIDATOR_MINLENGTH
 } from '../../shared/util/validators';
 import './PlaceForm.css';
+
 
 const formReducer = (state, action) => {
   switch (action.type) {
@@ -50,6 +52,10 @@ const NewPlace = () => {
       description: {
         value: '',
         isValid: false
+      },
+      image:{
+        value:null,
+        isValid:false
       }
     },
     isValid: false
@@ -70,15 +76,15 @@ const NewPlace = () => {
     // console.log(formState.inputs);
     
     try {
-      await sendRequest('http://localhost:5000/api/places','POST',JSON.stringify({
-        title:formState.inputs.title.value,
-    description:formState.inputs.description.value,
-    address: formState.inputs.address.value,
-    creator:auth.id.toString()
-      }),
-      {
-        'Content-Type': 'application/json'
-      });
+      const formData = new FormData();
+      formData.append('title',formState.inputs.title.value);
+      formData.append('description',formState.inputs.description.value);
+      formData.append('address',formState.inputs.address.value);
+      formData.append('creator',auth.id.toString());
+      formData.append('image',formState.inputs.image.value);
+      await sendRequest(process.env.REACT_APP_BACKEND_URL+ '/places','POST',formData,
+      {Authorization:"Bearer " + auth.token}
+      );
 
       // console.log(response);
       history.push('/');
@@ -120,6 +126,7 @@ const NewPlace = () => {
         errorText="Please enter a valid address."
         onInput={inputHandler}
       />
+      <ImagePicker id='image' onInput={inputHandler}  />
       <Button type="submit" disabled={!formState.isValid}>
         ADD PLACE
       </Button>
